@@ -20,7 +20,7 @@
                 "<all_urls>"
             ],
             "js": [
-                "content.js"
+                "src/content/index.ts"
             ],
             "css": [
                 "content.css"
