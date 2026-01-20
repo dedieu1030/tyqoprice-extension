@@ -1,12 +1,10 @@
 /**
  * ECB (European Central Bank) Exchange Rate Manager
  * Direct API integration with SDMX JSON format parsing
+ * Includes caching via chrome.storage.local
  */
 
-// Types
-export interface ExchangeRates {
-    [currency: string]: number
-}
+import { ExchangeRates, CachedRates } from '../shared/types'
 
 interface ECBResponse {
     header: {
@@ -50,6 +48,30 @@ export class ECBRateManager {
      * @returns Object avec les taux de change
      */
     async getRates(baseCurrency: string = 'EUR'): Promise<ExchangeRates> {
+        const cacheKey = `tyqoprice_rates_${baseCurrency}`
+
+        // 1. Vérifier le cache
+        try {
+            // Check if running in extension environment
+            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                const cached = await chrome.storage.local.get(cacheKey)
+                const data = cached[cacheKey] as CachedRates | undefined
+
+                if (data && data.timestamp && data.rates) {
+                    const now = Date.now()
+                    // Si le cache est valide (moins de 24h)
+                    if (now - data.timestamp < this.cacheExpiry) {
+                        console.log(`✅ Using cached rates for ${baseCurrency}`)
+                        return data.rates
+                    }
+                    console.log(`⚠️ Cache expired for ${baseCurrency}`)
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Could not access storage', error)
+        }
+
+        // 2. Fetch depuis l'API
         console.log(`🏦 Fetching ECB rates for ${baseCurrency}...`)
 
         // Construire l'URL SDMX
@@ -68,6 +90,23 @@ export class ECBRateManager {
 
             // Parser le format SDMX
             const rates = this.parseSDMXResponse(data, baseCurrency)
+
+            // 3. Sauvegarder dans le cache
+            try {
+                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                    const cacheData: CachedRates = {
+                        rates,
+                        timestamp: Date.now(),
+                        baseCurrency
+                    }
+                    await chrome.storage.local.set({
+                        [cacheKey]: cacheData
+                    })
+                    console.log(`💾 Rates cached for ${baseCurrency}`)
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not save to storage', error)
+            }
 
             console.log(`✅ ECB rates fetched: ${Object.keys(rates).length} currencies`)
             return rates
