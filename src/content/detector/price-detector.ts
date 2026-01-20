@@ -3,7 +3,8 @@
  * Orchestrates parsing and element detection
  */
 
-import { TextParser, PriceMatch } from './text-parser'
+import { TextParser } from './text-parser'
+import type { PriceMatch } from './text-parser'
 import { DynamicContentObserver } from './mutation-observer'
 
 export interface PriceElement {

@@ -7,7 +7,7 @@ import { PriceDetector } from './detector/price-detector'
 import { UIRenderer } from './ui/ui-renderer'
 import { CurrencyFormatter } from './converter/currency-formatter'
 import { Messenger } from '../shared/utils/messaging'
-import { ExchangeRates, ConvertedPrice } from '../shared/types'
+import type { ExchangeRates, ConvertedPrice } from '../shared/types'
 
 class TyqopriceContent {
     private detector: PriceDetector
@@ -58,7 +58,7 @@ class TyqopriceContent {
         if (!this.rates || !this.settings.enabled) return
 
         for (const item of elements) {
-            const { element, matches } = item
+            const { matches } = item
             const conversions: ConvertedPrice[] = []
 
             // On prend le premier match pour simplifier (souvent le bon)

@@ -19,7 +19,7 @@ chrome.runtime.onStartup.addListener(async () => {
 })
 
 // Lors de l'installation ou mise à jour
-chrome.runtime.onInstalled.addListener(async (details) => {
+chrome.runtime.onInstalled.addListener(async (details: chrome.runtime.InstalledDetails) => {
     console.log('📦 Extension installed:', details.reason)
     await updateRates()
 })
@@ -38,7 +38,7 @@ async function updateRates() {
 }
 
 // Gestion des messages depuis le content script ou popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request: any, _sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void) => {
     if (request.type === 'GET_RATES') {
         rateManager.getRates(request.baseCurrency || 'EUR')
             .then(rates => sendResponse({ success: true, rates }))

@@ -4,7 +4,7 @@
  * Includes caching via chrome.storage.local
  */
 
-import { ExchangeRates, CachedRates } from '../shared/types'
+import type { ExchangeRates, CachedRates } from '../shared/types'
 
 interface ECBResponse {
     header: {
@@ -53,7 +53,7 @@ export class ECBRateManager {
         // 1. Vérifier le cache
         try {
             // Check if running in extension environment
-            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            if (typeof (globalThis as any).chrome !== 'undefined' && (globalThis as any).chrome.storage && (globalThis as any).chrome.storage.local) {
                 const cached = await chrome.storage.local.get(cacheKey)
                 const data = cached[cacheKey] as CachedRates | undefined
 
@@ -93,7 +93,7 @@ export class ECBRateManager {
 
             // 3. Sauvegarder dans le cache
             try {
-                if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                if (typeof (globalThis as any).chrome !== 'undefined' && (globalThis as any).chrome.storage && (globalThis as any).chrome.storage.local) {
                     const cacheData: CachedRates = {
                         rates,
                         timestamp: Date.now(),

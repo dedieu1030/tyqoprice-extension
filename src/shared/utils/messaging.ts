@@ -3,12 +3,12 @@
  * Helper for communicating with the background script
  */
 
-import { ExchangeRates } from '../../shared/types'
+import type { ExchangeRates } from '../../shared/types'
 
 export class Messenger {
     async getRates(base: string): Promise<ExchangeRates> {
         return new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage({ type: 'GET_RATES', baseCurrency: base }, (response) => {
+            chrome.runtime.sendMessage({ type: 'GET_RATES', baseCurrency: base }, (response: any) => {
                 if (chrome.runtime.lastError) {
                     reject(chrome.runtime.lastError)
                 } else if (response && response.success) {

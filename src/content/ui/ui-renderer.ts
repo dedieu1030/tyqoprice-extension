@@ -4,9 +4,8 @@
  * Supports: Replacement Mode and Hover Badge Mode
  */
 
-import { PriceElement } from '../detector/price-detector'
-import { CurrencyFormatter } from './currency-formatter'
-import { ConvertedPrice } from '../../shared/types'
+import type { PriceElement } from '../detector/price-detector'
+import type { ConvertedPrice } from '../../shared/types'
 
 export class UIRenderer {
     // Styles injected into the page
@@ -73,11 +72,7 @@ export class UIRenderer {
 
         // Replace text content safely
         // We only replace the exact matched string to preserve other text in the node
-        let content = element.element.textContent || ''
-
-        // Simple replacement strategy (could be improved for multiple matches in one node)
-        // For now, we assume the node is primarily the price
-        element.element.textContent = newText
+        element.element.textContent = newText // Simple replacement strategy
         element.element.setAttribute('data-tyqoprice-converted', 'true')
     }
 
