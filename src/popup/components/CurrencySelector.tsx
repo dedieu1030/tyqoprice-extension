@@ -1,12 +1,11 @@
-
 import { useState, useEffect } from 'react'
-import { Check, Plus, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Check, Plus, X, Activity, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ECBRateManager } from '@/lib/ecb-rate-manager'
+import { MultiSourceRateManager } from '@/lib/multi-source-rate-manager'
+import { ChatGPTCard } from '@/components/chatgpt/ChatGPTCard'
 
 export function CurrencySelector() {
     const [targetCurrencies, setTargetCurrencies] = useState<string[]>(['USD', 'GBP'])
@@ -14,12 +13,12 @@ export function CurrencySelector() {
     const [availableCurrencies, setAvailableCurrencies] = useState<string[]>([])
 
     useEffect(() => {
-        const manager = new ECBRateManager()
+        const manager = new MultiSourceRateManager()
         manager.getCurrencies().then(setAvailableCurrencies).catch(console.error)
     }, [])
 
     const addCurrency = (code: string) => {
-        if (targetCurrencies.length >= 5) return // Max 5 limit
+        if (targetCurrencies.length >= 5) return
         if (!targetCurrencies.includes(code)) {
             setTargetCurrencies([...targetCurrencies, code])
             setOpen(false)
@@ -31,31 +30,52 @@ export function CurrencySelector() {
     }
 
     return (
-        <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
+        <div className="space-y-4">
+            <div className="grid gap-3">
                 {targetCurrencies.map(code => (
-                    <Badge key={code} variant="secondary" className="px-3 py-1 text-sm font-medium gap-2">
-                        {code}
-                        <button
-                            onClick={() => removeCurrency(code)}
-                            className="hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full p-0.5 transition-colors"
-                        >
-                            <X className="w-3 h-3" />
-                        </button>
-                    </Badge>
+                    <ChatGPTCard
+                        key={code}
+                        title={`${code} - ${code === 'USD' ? 'US Dollar' : code === 'GBP' ? 'British Pound' : 'Currency'}`}
+                        badge="Target"
+                        headerAction={
+                            <button
+                                onClick={() => removeCurrency(code)}
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        }
+                    >
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 border-t border-border/40 pt-2 mt-1">
+                            <div className="flex flex-row justify-between items-center text-[11px] py-1 border-b border-border/20">
+                                <div className="text-muted-foreground flex items-center gap-1">
+                                    <Activity size={10} />
+                                    Rate
+                                </div>
+                                <div className="font-mono font-semibold">1.0842</div>
+                            </div>
+                            <div className="flex flex-row justify-between items-center text-[11px] py-1 border-b border-border/20">
+                                <div className="text-muted-foreground flex items-center gap-1">
+                                    <TrendingUp size={10} />
+                                    24h Chg
+                                </div>
+                                <div className="font-mono font-semibold text-emerald-500">+0.12%</div>
+                            </div>
+                        </div>
+                    </ChatGPTCard>
                 ))}
 
                 {targetCurrencies.length < 5 && (
                     <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-7 border-dashed gap-1 text-xs">
-                                <Plus className="w-3 h-3" />
-                                Add Currency
+                            <Button variant="outline" className="w-full border-dashed border-2 h-14 rounded-2xl gap-2 text-muted-foreground hover:text-primary hover:border-primary/50 transition-all">
+                                <Plus className="w-4 h-4" />
+                                <span className="font-semibold text-sm">Add Currency Model</span>
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="p-0 w-[200px]" align="start">
-                            <Command>
-                                <CommandInput placeholder="Search currency..." />
+                        <PopoverContent className="p-0 w-[240px]" align="center">
+                            <Command className="rounded-xl border shadow-md">
+                                <CommandInput placeholder="Search currency..." className="h-9" />
                                 <CommandEmpty>No currency found.</CommandEmpty>
                                 <ScrollArea className="h-[200px]">
                                     <CommandGroup>
@@ -66,12 +86,13 @@ export function CurrencySelector() {
                                                     key={code}
                                                     value={code}
                                                     onSelect={() => addCurrency(code)}
+                                                    className="flex items-center gap-2 px-3"
                                                 >
-                                                    <Check
-                                                        className={`mr-2 h-4 w-4 ${targetCurrencies.includes(code) ? "opacity-100" : "opacity-0"
-                                                            }`}
-                                                    />
-                                                    {code}
+                                                    <div className="flex h-5 w-5 items-center justify-center rounded bg-muted text-[10px] font-bold">
+                                                        {code[0]}
+                                                    </div>
+                                                    <span className="flex-1">{code}</span>
+                                                    {targetCurrencies.includes(code) && <Check className="h-4 w-4" />}
                                                 </CommandItem>
                                             ))}
                                     </CommandGroup>
@@ -81,8 +102,8 @@ export function CurrencySelector() {
                     </Popover>
                 )}
             </div>
-            <p className="text-[10px] text-muted-foreground">
-                Select up to 5 currencies to display simultaneously.
+            <p className="px-1 text-[10px] text-muted-foreground font-medium uppercase tracking-tight opacity-60">
+                MAX 5 MODELS ENABLED SIMULTANEOUSLY
             </p>
         </div>
     )
